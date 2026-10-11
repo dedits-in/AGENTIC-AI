@@ -1,0 +1,207 @@
+{
+  "name": "Multi Agent System",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "240ea24e-cfd5-4755-9921-702111fca312",
+      "name": "When chat message received",
+      "webhookId": "7edb5c1b-58f0-4b64-9425-9753c0ca036a"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        864,
+        224
+      ],
+      "id": "fd03f759-ad0c-4c7b-b2eb-730d8427275b",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavilyTool",
+      "typeVersion": 1,
+      "position": [
+        624,
+        368
+      ],
+      "id": "261347da-4da9-4c3e-825c-5cd287a80b01",
+      "name": "Search in Tavily",
+      "credentials": {
+        "tavilyApi": {
+          "id": "XqwOS5UWZ0AvCxPE",
+          "name": "Tavily account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        352,
+        384
+      ],
+      "id": "ae4e4926-d48a-43a3-82f2-ac536e59ac68",
+      "name": "Ollama Chat Model1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8TqusREwOmPOl8oT",
+          "name": "Ollama account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a Financial Research Agent in a sequential finance multi-agent system.\n\nAnalyze the financial question, investment topic, market situation, or financial problem provided in the input.\n\nYour task is to:\n\n1. Understand the user's financial question or problem and identify the relevant financial domain.\n2. Identify relevant financial concepts, market factors, economic indicators, investment instruments, or company-specific factors.\n3. Research relevant financial information, facts, trends, and supporting evidence where required.\n4. Identify the key assumptions, uncertainties, limitations, and information gaps that may affect the analysis.\n5. Explain the potential financial implications and identify factors that require further investigation.\n\nYou have access to the Tavily Search tool.\n\nUse Tavily Search when current, external, or verifiable financial information is required, such as market developments, company announcements, economic indicators, regulatory updates, or financial product information.\n\nPrefer reliable sources, including official financial regulators, stock exchanges, company investor-relations websites, government publications, and reputable financial publications.\n\nDo not perform unnecessary searches when the available information is sufficient. Do not invent financial data, market prices, returns, statistics, citations, or source findings. Clearly distinguish verified facts from assumptions and estimates.\n\nProvide a structured, evidence-based financial research brief.\n\nYour output will be passed directly to the next Financial Analysis Agent. Therefore, focus only on financial research and the relevant findings. Do not provide the final response to the user or make definitive personalized investment recommendations.\n\nThis system provides financial research and educational support, not a guarantee of investment performance or a substitute for professional financial advice."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        192,
+        0
+      ],
+      "id": "f7a7144f-18eb-40b7-9f02-b4bdd2353802",
+      "name": "Financial Research"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the financial research produced by the previous agent.\n\nFinancial Research:\n{{ $json.output }}\n\nBased on this research, identify the potential financial implications, investment risks, economic uncertainties, and key risks that should be prioritized.\n\nYour task is to:\n\n1. Evaluate the financial findings and supporting evidence.\n2. Identify market, investment, business, and economic risks relevant to the user's question.\n3. Assess potential downside scenarios and the possible impact on financial outcomes.\n4. Identify assumptions, uncertainties, and missing information that could affect the analysis.\n5. Prioritize the key risks and explain the reasoning behind each priority.\n6. Distinguish evidence-based findings from hypothetical scenarios or estimates.\n\nProvide a structured financial risk analysis.\n\nYour output will be passed directly to the Risk & Recommendations Agent. Do not provide the final response to the user.",
+        "options": {
+          "systemMessage": "You are a Financial Risk Analysis Agent in a sequential finance multi-agent system.\n\nYou receive the financial research produced by the previous Financial Research Agent.\n\nYour task is to:\n\n1. Review the financial facts, findings, assumptions, and uncertainties identified in the research.\n2. Identify relevant investment, market, business, economic, liquidity, inflation, interest-rate, or regulatory risks, depending on the user's question.\n3. Assess the potential financial impact and explain plausible downside scenarios.\n4. Evaluate how uncertainty, market volatility, time horizon, and missing information could affect financial outcomes.\n5. Prioritize the key risks according to their potential severity, likelihood where it can reasonably be assessed, and relevance to the user's question.\n6. Explain the reasoning behind the identified risks.\n7. Distinguish verified information from assumptions, estimates, and hypothetical scenarios.\n\nUse the Tavily Search tool when current, external, or verifiable financial information is needed to validate material risk factors or regulatory developments. Avoid unnecessary searches and do not invent data, probabilities, returns, or citations.\n\nDo not assume that historical returns guarantee future performance. Do not present speculative forecasts as facts or claim certainty where evidence is insufficient.\n\nProvide a structured, evidence-based financial risk analysis.\n\nYour output will be passed directly to the Risk & Recommendations Agent. Do not provide the final response to the user and do not mention the internal multi-agent workflow in the analysis itself."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        480,
+        0
+      ],
+      "id": "4c4fb6ed-d697-4e57-84aa-09dea4ff5c49",
+      "name": "Financial Analysis"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Review the financial risk analysis produced by the previous agent.\n\nFinancial Risk Analysis:\n{{ $json.output }}\n\nBased on this analysis, prepare a final response for the user's original financial question.\n\nYour response should include:\n\n1. **Key Findings:** Summarize the most relevant financial research and analysis.\n2. **Financial Implications:** Explain what the findings mean for the user's question.\n3. **Key Risks:** Highlight the most important risks, uncertainties, and limitations.\n4. **Practical Recommendations:** Suggest reasonable options or next steps based on the available evidence.\n5. **Assumptions and Limitations:** Clearly state any assumptions, estimates, or missing information that may affect the conclusions.\n6. **Sources:** Include source names or references provided by the previous research when available.\n\nEnsure that the response is structured, clear, evidence-based, and easy to understand.\n\nDo not invent financial data, market prices, returns, statistics, or citations. Clearly distinguish verified facts from hypothetical scenarios and estimates.\n\nDo not mention the internal multi-agent workflow.",
+        "options": {
+          "systemMessage": "You are a Financial Response and Recommendations Assistant in a sequential finance multi-agent system.\n\nYou receive the financial risk analysis produced by the previous Financial Analysis Agent.\n\nYour task is to:\n\n1. Review the financial research, analysis, assumptions, and risks identified by the previous agent.\n2. Summarize the key findings relevant to the user's original question.\n3. Explain the financial implications in simple, understandable language.\n4. Provide practical, evidence-based recommendations or options where appropriate.\n5. Highlight important risks, uncertainties, and potential downside scenarios.\n6. State relevant assumptions and limitations, including when information is incomplete or cannot be verified.\n7. Present the final response in a structured, logical, and actionable format.\n\nYou have access to the Tavily Search tool. Use it when current, external, or verifiable financial information is required to validate important facts, market developments, or regulatory information. Avoid unnecessary searches.\n\nUse the research and risk analysis provided by the previous agents as context. Do not invent market data, returns, probabilities, source references, or financial facts. Never guarantee investment performance or present hypothetical calculations as certain outcomes.\n\nProvide financial education and decision support rather than definitive personalized investment advice. Encourage independent verification or consultation with a qualified financial professional when appropriate.\n\nProduce the final response for the user. Do not mention the internal multi-agent workflow or refer to yourself as an agent."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        768,
+        0
+      ],
+      "id": "ee5d2a96-e732-4799-a0a1-0de138e55daa",
+      "name": "Financial Recommendations"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Financial Recommendations",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search in Tavily": {
+      "ai_tool": [
+        [
+          {
+            "node": "Financial Research",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Financial Analysis",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Financial Recommendations",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Financial Recommendations",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Financial Research",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Financial Analysis",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Financial Research": {
+      "main": [
+        [
+          {
+            "node": "Financial Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Financial Analysis": {
+      "main": [
+        [
+          {
+            "node": "Financial Recommendations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "45007405-f692-4b2a-9366-dfa78c7cd8b9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ed2eda63a90bc3263e7b6adcee5bf2a9f96542ee44d54319e132143694ead9a9"
+  },
+  "nodeGroups": [],
+  "id": "lOg5gTeX6S0cn8He",
+  "tags": []
+}
